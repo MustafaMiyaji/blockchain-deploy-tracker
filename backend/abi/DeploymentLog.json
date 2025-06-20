@@ -1,0 +1,125 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "commitHash",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "imageId",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "environment",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "DeploymentLogged",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "deployments",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "commitHash",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "imageId",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "environment",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllDeployments",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "commitHash",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "imageId",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "environment",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct DeploymentLog.Deployment[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "commitHash",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "imageId",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "environment",
+        "type": "string"
+      }
+    ],
+    "name": "logDeployment",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

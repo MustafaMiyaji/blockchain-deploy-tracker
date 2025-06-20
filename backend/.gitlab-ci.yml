@@ -1,0 +1,208 @@
+variables:
+  NPM_TOKEN: ${CI_JOB_TOKEN}
+  NODE_VERSION: 16.7.0
+
+default:
+  image: node:${NODE_VERSION}
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+    - |
+      {
+        echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/"
+        echo "${CI_API_V4_URL#https?}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=\${CI_JOB_TOKEN}"
+      } | tee --append .npmrc
+    - chmod +x ./utils/setup-env.sh
+    - ./utils/setup-env.sh
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .npm/
+      - node_modules/
+
+stages:
+  - build
+  - test
+  - report
+  - release
+  - deploy
+  - operate
+
+build-src:
+  stage: build
+  script:
+    - echo "Compiling the code..."
+    - npm run compile
+    - echo "Compile complete."
+  artifacts:
+    paths:
+      - abi
+      - artifacts
+
+build-doc:
+  stage: build
+  script:
+    - echo "Generating docs..."
+    - npm run docgen
+    - echo "Docs generation complete."
+  artifacts:
+    paths:
+      - docs
+
+lint-test:
+  stage: test
+  script:
+    - echo "Linting code..."
+    - npm run lint:sol
+    - echo "No lint issues found."
+
+vulnerability-test 1/2:
+  stage: test
+  script:
+    - apt-get update && apt-get install -y python3-pip
+    - pip3 install slither-analyzer
+    - echo "Running slither..."
+    - slither .
+  allow_failure: false
+
+vulnerability-test 2/2:
+  stage: test
+  #image: mythril/myth
+  before_script:
+    - apt-get update
+    - apt-get install -y software-properties-common
+    - add-apt-repository ppa:ethereum/ethereum
+    - apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1C52189C923F6CA9
+    - apt-get update
+    - apt-get install -y solc
+    - apt-get install -y libssl-dev python3-dev python3-pip libleveldb-dev
+    - pip3 install mythril
+  script:
+    - chmod +x ./utils/mythril-check.sh
+    - ./utils/mythril-check.sh
+  allow_failure: false
+
+unit-test:
+  stage: test
+  script:
+    - echo "Running unit tests... "
+    - npm run test
+
+secrets-test:
+  stage: test
+  image: python:latest
+  before_script: [":"] # noop, override default before_script
+  script:
+    - echo "Running secrets scanner..."
+    - pip install trufflehog3
+    - trufflehog3 --no-history -v
+  allow_failure: false
+
+coverage-report:
+  stage: report
+  script:
+    - echo "Generating code coverage report..."
+    - npm run coverage
+  artifacts:
+    paths:
+      - coverage
+      - coverage.json
+  allow_failure: true
+
+gas-report:
+  stage: report
+  script:
+    - echo "Generating gas report..."
+    - npm run test # creates gas-report.txt
+    - echo "<pre>" > gas-report.html
+    - npx ansi-to-html gas-report.txt --fg black --bg white >> gas-report.html
+  artifacts:
+    paths:
+      - gas-report.html
+
+release:
+  stage: release
+  script:
+    - tar -zcvf abi.tar.gz abi --ignore-failed-read
+    - tar -zcvf docs.tar.gz docs --ignore-failed-read
+    - tar -zcvf artifacts.tar.gz artifacts --ignore-failed-read
+    - tar -zcvf coverage.tar.gz coverage coverage.json --ignore-failed-read
+    - tar -zcvf gas-report.tar.gz gas-report.html --ignore-failed-read
+    - npm run semantic-release
+  only:
+    - main
+  except:
+    refs:
+      - tags
+    variables:
+      - $CI_COMMIT_TITLE =~ /^RELEASE:.+$/
+
+# Typically contracts are deployed into prod (testnet / mainnet) locally from a developer's machine.
+# This job automates the task, deployment results are saved in the deployments dir which is synced to the repo.
+deploy_staging:
+  stage: deploy
+  extends: .git:push
+  when: manual
+  script:
+    - echo "Deploy to staging environment"
+    - npm run deploy:staging
+    - rsync -a deployments "${CI_COMMIT_SHA}"
+  environment: staging
+  only:
+    - main
+  artifacts:
+    paths:
+      - deployments
+
+deploy_prod:
+  stage: deploy
+  extends: .git:push
+  when: manual
+  script:
+    - echo "Deploy to production environment"
+    - npm run deploy:production
+    - rsync -a deployments "${CI_COMMIT_SHA}"
+  environment: production
+  only:
+    - main
+  artifacts:
+    paths:
+      - deployments
+
+verify_staging:
+  stage: operate
+  needs: [deploy_staging]
+  script:
+    - npm run verify:staging
+
+verify_delpoy:
+  stage: operate
+  needs: [deploy_prod]
+  script:
+    - npm run verify:production
+
+# https://dev.to/ranb2002/how-to-push-to-a-git-repository-from-a-gitlab-ci-pipeline-4ikp
+# https://gitlab.com/guided-explorations/gitlab-ci-yml-tips-tricks-and-hacks/commit-to-repos-during-ci/commit-to-repos-during-ci/-/blob/master/.gitlab-ci.yml
+.git:push:
+  extends: default
+  before_script:
+    - apt-get update && apt-get install -y rsync
+    - git clone "https://root:$GITLAB_TOKEN@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git" "${CI_COMMIT_SHA}" # nosecret
+    - git config --global user.email "${GIT_USER_EMAIL:-$GITLAB_USER_EMAIL}"
+    - git config --global user.name "${GIT_USER_NAME:-$GITLAB_USER_NAME}"
+  after_script:
+    - cd "${CI_COMMIT_SHA}"
+    - git add .
+    - |-
+      # Check if we have modifications to commit
+      CHANGES=$(git status --porcelain | wc -l)
+
+      if [ "$CHANGES" -gt "0" ]; then
+        # Show the status of files that are about to be created, updated or deleted
+        git status
+
+        # Commit all changes
+        git commit -m "Updated by job with ID: $CI_JOB_ID [ci skip]"
+       
+        # Update the repository and make sure to skip the pipeline create for this commit
+        git push origin "${CI_DEFAULT_BRANCH}" -o ci.skip 
+      fi
