@@ -1,70 +1,92 @@
-# Getting Started with Create React App
+# 🚀 Blockchain Deployment Tracker
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, blockchain-backed immutable deployment logging tool with a user-friendly frontend interface.
 
-## Available Scripts
+## 🔧 Features
 
-In the project directory, you can run:
+- View blockchain-logged deployment metadata (commit hash, image ID, environment, timestamp)
+- Toggle between Dark/Light themes
+- Optional QR code to access secure log route
+- Protected logging route (`/addlog-4a3b1f`)
+- Built with React, Ethers.js, Hardhat, and Solidity
 
-### `npm start`
+## 🗂 Project Structure
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```
+blockchain-devops-project/
+├── backend/                 # Hardhat smart contracts and deployment scripts
+│   ├── contracts/
+│   ├── scripts/
+│   ├── hardhat.config.js
+│   └── ...
+├── frontend/                # React frontend interface
+│   ├── src/
+│   │   ├── components/
+│   │   ├── contracts/
+│   │   └── App.js
+│   └── ...
+└── README.md                # Project documentation
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 Getting Started
 
-### `npm test`
+### Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js
+- Docker (optional for real deployments)
+- MetaMask (for interacting with local blockchain)
 
-### `npm run build`
+### Setup
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Clone the repo**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+git clone https://github.com/MustafaMiyaji/blockchain-deploy-tracker
+cd blockchain-devops-project
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. **Install Backend Dependencies**
 
-### `npm run eject`
+```bash
+cd backend
+npm install
+npx hardhat node --hostname 127.0.0.1
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+3. **Deploy Contracts**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npx hardhat run scripts/deploy.js --network localhost
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+4. **Log Deployment (optional)**
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+ENVIRONMENT=dev npx hardhat run scripts/log_deploy.js --network localhost
+```
 
-## Learn More
+5. **Install Frontend Dependencies**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+cd ../frontend
+npm install
+npm start
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+6. **Access the App**
+   Visit `http://localhost:3000` for the dashboard, and `/addlog-4a3b1f` for protected log submission.
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 🛡 Security
 
-### Analyzing the Bundle Size
+- Use `.env` for secrets (not included in this repo)
+- Protected route with basic in-memory password (`admin123` by default)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🙌 Credits
 
-### Making a Progressive Web App
+Built by MustafaMiyaji.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 🪪 License
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MIT License
