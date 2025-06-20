@@ -1,55 +1,92 @@
-# 🛡️ Blockchain Deployment Tracker
+# 🚀 Blockchain Deployment Tracker
 
-This project is a **full-stack immutable deployment tracker** using **Solidity + React + Hardhat + ethers.js**. It allows secure, verifiable logging of deployment metadata like commit hashes and Docker image IDs directly on the blockchain.
+A modern, blockchain-backed immutable deployment logging tool with a user-friendly frontend interface.
 
-## 💡 Features
+## 🔧 Features
 
-- ✅ Immutable storage of deployment metadata
-- ✅ Fully decentralized log viewer
-- ✅ React + Dark/Light Mode
-- ✅ Protected log upload page (`/addlog-4a3b1f`)
-- ✅ QR code generator for secure access
-- 🐳 CI/CD-friendly structure (Docker & Git-ready)
+- View blockchain-logged deployment metadata (commit hash, image ID, environment, timestamp)
+- Toggle between Dark/Light themes
+- Optional QR code to access secure log route
+- Protected logging route (`/addlog-4a3b1f`)
+- Built with React, Ethers.js, Hardhat, and Solidity
 
-## 🔧 Tech Stack
+## 🗂 Project Structure
 
-- Frontend: React + React Router + Framer Motion + Toastify
-- Smart Contracts: Solidity
-- Deployment: Hardhat
-- Blockchain: Local Hardhat node
-- Styling: CSS + Theming
-- Extras: QR code access, password-protected admin route
+```
+blockchain-devops-project/
+├── backend/                 # Hardhat smart contracts and deployment scripts
+│   ├── contracts/
+│   ├── scripts/
+│   ├── hardhat.config.js
+│   └── ...
+├── frontend/                # React frontend interface
+│   ├── src/
+│   │   ├── components/
+│   │   ├── contracts/
+│   │   └── App.js
+│   └── ...
+└── README.md                # Project documentation
+```
 
-## 🚀 Setup Instructions
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js
+- Docker (optional for real deployments)
+- MetaMask (for interacting with local blockchain)
+
+### Setup
+
+1. **Clone the repo**
 
 ```bash
-git clone https://github.com/your-username/blockchain-deployment-tracker.git
-cd blockchain-deployment-tracker
+git clone https://github.com/MustafaMiyaji/blockchain-deploy-tracker
+cd blockchain-devops-project
+```
 
-# Backend
+2. **Install Backend Dependencies**
+
+```bash
 cd backend
 npm install
-npx hardhat node  # start local node in new terminal
-npx hardhat run scripts/deploy.js --network localhost
+npx hardhat node --hostname 127.0.0.1
+```
 
-# Frontend
+3. **Deploy Contracts**
+
+```bash
+npx hardhat run scripts/deploy.js --network localhost
+```
+
+4. **Log Deployment (optional)**
+
+```bash
+ENVIRONMENT=dev npx hardhat run scripts/log_deploy.js --network localhost
+```
+
+5. **Install Frontend Dependencies**
+
+```bash
 cd ../frontend
 npm install
 npm start
 ```
 
-## 🔐 Protected Route
-
-To access the secure log submission route:
-
-```
-http://localhost:3000/addlog-4a3b1f
-```
-
-Password: `devops123` (you can update this)
+6. **Access the App**
+   Visit `http://localhost:3000` for the dashboard, and `/addlog-4a3b1f` for protected log submission.
 
 ---
 
-## 📜 License
+## 🛡 Security
 
-MIT License © 2025
+- Use `.env` for secrets (not included in this repo)
+- Protected route with basic in-memory password (`admin123` by default)
+
+## 🙌 Credits
+
+Built by MustafaMiyaji.
+
+## 🪪 License
+
+MIT License
